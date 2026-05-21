@@ -77,6 +77,39 @@
       text-transform: lowercase;
       margin-left: 6px;
     }
+    #nxne-people-form .headshot-controls {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    #nxne-people-form .headshot-upload-btn {
+      background: var(--black-3); color: var(--cream);
+      border: 1px solid var(--border-strong);
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+      font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 10px 16px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    #nxne-people-form .headshot-upload-btn:hover { border-color: var(--cream); background: var(--border); }
+    #nxne-people-form .headshot-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #nxne-people-form .headshot-status {
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 500;
+      font-size: 12px; letter-spacing: 0.5px;
+      color: var(--cream-dim);
+    }
+    #nxne-people-form .headshot-status.uploading { color: var(--cream); }
+    #nxne-people-form .headshot-status.ok { color: #5cb85c; }
+    #nxne-people-form .headshot-status.error { color: var(--red); }
+    #nxne-people-form .headshot-preview {
+      display: none;
+      max-width: 200px; max-height: 200px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+    }
+    #nxne-people-form .headshot-url-input {
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    #nxne-people-form .headshot-url-input::placeholder { color: var(--muted); }
     #nxne-people-form label .hint {
       display: block;
       font-family: 'Barlow', sans-serif;
@@ -308,10 +341,16 @@
         </div>
 
         <div class="field">
-          <label for="nxne-pf-headshotUrl">Headshot URL
-            <span class="hint">Paste a public link to your photo (LinkedIn, your website, agency page, etc.). Optional but recommended.</span>
+          <label for="nxne-pf-upload-btn">Headshot <span class="optional">(optional)</span>
+            <span class="hint">Upload a photo (JPEG/PNG/WebP, max 5 MB) or paste a public URL below. Without a photo, your initials will appear on a branded card.</span>
           </label>
-          <input type="url" id="nxne-pf-headshotUrl" name="headshotUrl" placeholder="https://" maxlength="500">
+          <div class="headshot-controls">
+            <input type="file" id="nxne-pf-headshotFile" accept="image/jpeg,image/png,image/webp" style="display:none">
+            <button type="button" class="headshot-upload-btn" id="nxne-pf-upload-btn">&#128247; Choose photo</button>
+            <span class="headshot-status" id="nxne-pf-headshot-status"></span>
+          </div>
+          <img class="headshot-preview" id="nxne-pf-headshot-preview" alt="">
+          <input type="url" id="nxne-pf-headshotUrl" name="headshotUrl" class="headshot-url-input" placeholder="…or paste a URL: https://" maxlength="500">
         </div>
 
         <div class="field">
@@ -378,6 +417,71 @@
     el.addEventListener('input', update);
     update();
   });
+
+  /* ─── HEADSHOT UPLOAD ──────────────────────────────────────
+     Click "Choose photo" → file picker → POST to velluma.co/nxne-upload.php →
+     server validates, resizes, strips EXIF, returns permanent URL → auto-fill
+     the hidden headshotUrl input. URL paste field stays as fallback. */
+  (function wireHeadshotUpload() {
+    const UPLOAD_URL = 'https://velluma.co/nxne-upload.php';
+    const MAX_BYTES  = 5 * 1024 * 1024;
+    const btn     = $('nxne-pf-upload-btn');
+    const fileIn  = $('nxne-pf-headshotFile');
+    const status  = $('nxne-pf-headshot-status');
+    const preview = $('nxne-pf-headshot-preview');
+    const urlIn   = $('nxne-pf-headshotUrl');
+    if (!btn || !fileIn || !status || !preview || !urlIn) return;
+
+    btn.addEventListener('click', () => fileIn.click());
+
+    fileIn.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (file.size > MAX_BYTES) {
+        status.textContent = '✗ Too large (max 5 MB)';
+        status.className = 'headshot-status error';
+        fileIn.value = '';
+        return;
+      }
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+        status.textContent = '✗ JPEG, PNG, or WebP only';
+        status.className = 'headshot-status error';
+        fileIn.value = '';
+        return;
+      }
+
+      // Local preview right away — even if upload hasn't completed
+      const reader = new FileReader();
+      reader.onload = (ev) => { preview.src = ev.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(file);
+
+      status.textContent = 'Uploading…';
+      status.className = 'headshot-status uploading';
+      btn.disabled = true;
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('token', FORM_TOKEN);
+
+      try {
+        const res = await fetch(UPLOAD_URL, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data && data.ok && data.url) {
+          urlIn.value = data.url;
+          status.textContent = '✓ Uploaded';
+          status.className = 'headshot-status ok';
+        } else {
+          throw new Error((data && data.error) || 'Upload failed (HTTP ' + res.status + ')');
+        }
+      } catch (err) {
+        status.textContent = '✗ ' + err.message;
+        status.className = 'headshot-status error';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  })();
 
   /* ─── SUBMIT HANDLER ──────────────────────────────────────── */
   async function submitForm(e) {
