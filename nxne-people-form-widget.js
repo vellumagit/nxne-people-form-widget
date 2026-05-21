@@ -69,6 +69,14 @@
       color: var(--cream);
     }
     #nxne-people-form label .req { color: var(--red); margin-left: 4px; }
+    #nxne-people-form label .optional {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: lowercase;
+      margin-left: 6px;
+    }
     #nxne-people-form label .hint {
       display: block;
       font-family: 'Barlow', sans-serif;
@@ -284,7 +292,7 @@
         </div>
 
         <div class="field">
-          <label for="nxne-pf-description">One-line tagline
+          <label for="nxne-pf-description">One-line tagline <span class="optional">(optional)</span>
             <span class="hint">A short hook that appears under your name on the public schedule. Keep it punchy.</span>
           </label>
           <input type="text" id="nxne-pf-description" name="description" maxlength="200">
@@ -292,7 +300,7 @@
         </div>
 
         <div class="field">
-          <label for="nxne-pf-bio">Bio
+          <label for="nxne-pf-bio">Bio <span class="optional">(optional)</span>
             <span class="hint">A full paragraph for your public profile. Tell us about yourself — and what you do. If you're in the music industry, you might mention whether you're in management, booking, festivals, venues, touring, ticketing, labels, A&amp;R, publishing, marketing, digital, brands, or something else. Plain text. Max 1500 characters.</span>
           </label>
           <textarea id="nxne-pf-bio" name="bio" maxlength="1500" rows="6"></textarea>
