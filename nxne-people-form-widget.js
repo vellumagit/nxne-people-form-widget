@@ -284,8 +284,8 @@
       <div class="eyebrow">NXNE 2026 · Speaker &amp; Panelist Profile</div>
       <h1>Tell us<br>about you</h1>
       <p class="intro">
-        If you're speaking, moderating, or sponsoring at NXNE 2026, share your details here so we can
-        feature you properly on <strong>nxne.com/2026-schedule</strong>. Submissions are reviewed before going live.
+        Whether you're a speaker, moderator, artist manager, publicist, label rep, journalist, partner, sponsor, agent, producer, promoter, or simply someone active in music and culture attending NXNE, we'd love for you to join the list.
+        Submissions are reviewed before appearing on <strong>nxne.com/2026-schedule</strong>.
       </p>
 
       <div class="error-msg" id="nxne-pf-error"></div>
