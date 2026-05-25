@@ -305,6 +305,7 @@
             <option value="Artist">Artist</option>
             <option value="Media">Media</option>
             <option value="Music Industry Professional">Music Industry Professional</option>
+            <option value="Panelist">Panelist</option>
             <option value="Partner">Partner</option>
             <option value="Sponsor">Sponsor</option>
             <option value="Other">Other</option>
